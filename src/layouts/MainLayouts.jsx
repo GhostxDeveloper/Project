@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
-import { Drawer, List, ListItem, ListItemText, CssBaseline, AppBar, Toolbar, Box } from '@mui/material';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Box, CssBaseline, AppBar, Toolbar, Drawer, List, ListItem, ListItemText } from '@mui/material';
 
 const drawerWidth = 240;
 
 const MainLayout = ({ children }) => {
-  const [open, setOpen] = useState(true); // Controla si el menu desplegable está abierto o cerrado
+  const [role, setRole] = useState('');
 
-  const handleClick = () => {
-    setOpen(!open); // Cambia el estado de abierto o cerrado
-  };
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setRole(user.rol);
+    }
+  }, []);
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -34,26 +38,52 @@ const MainLayout = ({ children }) => {
         open={true}
       >
         <List>
-          <ListItem button>
-            <ListItemText primary="Opción 1" />
+          <ListItem button component={Link} to="/dashboard">
+            <ListItemText primary="Dashboard" />
           </ListItem>
-          <ListItem button>
-            <ListItemText primary="Opción 2" />
-          </ListItem>
-          <ListItem button onClick={handleClick}>
-            <ListItemText primary="Opción 3" />
-            {open ? <ExpandLess /> : <ExpandMore />}
-          </ListItem>
+          {role === 'User' && (
+            <ListItem button component={Link} to="/assigned-tasks">
+              <ListItemText primary="Mis Tareas Asignadas" />
+            </ListItem>
+          )}
+          {role === 'Master' && (
+            <>
+              <ListItem button component={Link} to="/assigned-tasks">
+                <ListItemText primary="Mis Tareas Asignadas" />
+              </ListItem>
+              <ListItem button component={Link} to="/groups">
+                <ListItemText primary="Grupos" />
+              </ListItem>
+              <ListItem button component={Link} to="/roles">
+                <ListItemText primary="Roles" />
+              </ListItem>
+              <ListItem button component={Link} to="/asignament">
+                <ListItemText primary="Asignar Tareas" />
+              </ListItem>
+              <ListItem button component={Link} to="/users">
+                <ListItemText primary="Usuarios" />
+              </ListItem>
+            </>
+          )}
+          {role === 'Admin' && (
+            <>
+              <ListItem button component={Link} to="/groups">
+                <ListItemText primary="Grupos" />
+              </ListItem>
+              <ListItem button component={Link} to="/asignament">
+                <ListItemText primary="Asignar Tareas" />
+              </ListItem>
+            </>
+          )}
         </List>
       </Drawer>
 
-      {/* Este es el lugar donde se renderizarán los 'children' */}
       <Box
         sx={{
           marginLeft: `${drawerWidth}px`,
           padding: 3,
           width: `calc(100% - ${drawerWidth}px)`,
-          marginTop: 8, // Ajusta el espacio debajo del AppBar
+          marginTop: 8,
         }}
       >
         {children}

@@ -23,7 +23,7 @@ const RegistroPage = () => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3000/add-user', { email, username, password, rol: 2 });
+      const response = await axios.post('http://localhost:3000/add-user', { email, username, password, rol: 'User' });
       setMessage(response.data);
     } catch (error) {
       setMessage('Error al registrar el usuario: ' + error.message);

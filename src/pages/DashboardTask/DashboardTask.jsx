@@ -4,7 +4,7 @@ import { Fab, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Butt
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import axios from 'axios';
 
-const DashboardPage = () => {
+const DashboardTask = () => {
   const [user, setUser] = useState(null);
   const [openModal, setOpenModal] = useState(false); // Controla la apertura de la modal
   const [openEditModal, setOpenEditModal] = useState(false); // Controla la apertura del modal de edición
@@ -20,8 +20,11 @@ const DashboardPage = () => {
     category: '',
     tag: '',
     userId: '',
+    groupId: '',
   });
   const [tasks, setTasks] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [groups, setGroups] = useState([]);
 
   useEffect(() => {
     // Obtener los datos del usuario desde localStorage
@@ -29,22 +32,47 @@ const DashboardPage = () => {
     if (storedUser) {
       const user = JSON.parse(storedUser);
       setUser(user);
-      setTaskData((prevData) => ({
-        ...prevData,
-        userId: user.id, // Actualiza el userId en taskData
-      }));
-      console.log('storedUser', storedUser);
-      fetchTasks(user.id);
+      fetchTasks();
+      fetchUsers();
+      fetchGroups();
     }
   }, []);
 
-  const fetchTasks = async (userId) => {
+  const fetchTasks = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/tasks/${userId}`);
+      const response = await axios.get('http://localhost:3000/new-tasks');
       setTasks(response.data);
     } catch (error) {
       console.error("Error al obtener las tareas:", error);
     }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/users');
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error al obtener los usuarios:", error);
+    }
+  };
+
+  const fetchGroups = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/groups');
+      setGroups(response.data);
+    } catch (error) {
+      console.error("Error al obtener los grupos:", error);
+    }
+  };
+
+  const getUserNameById = (userId) => {
+    const user = users.find(user => user.id === userId);
+    return user ? user.email : 'Unknown User';
+  };
+
+  const getGroupNameById = (groupId) => {
+    const group = groups.find(group => group.id === groupId);
+    return group ? group.name : 'Unknown Group';
   };
 
   const handleChange = (e) => {
@@ -76,10 +104,10 @@ const DashboardPage = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('http://localhost:3000/add-task', taskData);
+      const response = await axios.post('http://localhost:3000/new-add-task', taskData);
       console.log(response.data);
       setOpenModal(false); // Cerrar el modal después de enviar el formulario
-      fetchTasks(user.id); // Actualizar la lista de tareas
+      fetchTasks(); // Actualizar la lista de tareas
     } catch (error) {
       console.error("Error al agregar la tarea:", error);
     }
@@ -87,10 +115,10 @@ const DashboardPage = () => {
 
   const handleEditSubmit = async () => {
     try {
-      const response = await axios.put(`http://localhost:3000/tasks/${taskToEdit.id}`, taskData);
+      const response = await axios.put(`http://localhost:3000/new-tasks/${taskToEdit.id}`, taskData);
       console.log(response.data);
       setOpenEditModal(false); // Cerrar el modal después de enviar el formulario
-      fetchTasks(user.id); // Actualizar la lista de tareas
+      fetchTasks(); // Actualizar la lista de tareas
     } catch (error) {
       console.error("Error al editar la tarea:", error);
     }
@@ -109,8 +137,8 @@ const DashboardPage = () => {
   const handleDelete = async () => {
     try {
       console.log(`Eliminando tarea con ID: ${taskToDelete}`);
-      await axios.delete(`http://localhost:3000/tasks/${taskToDelete}`);
-      fetchTasks(user.id); // Actualizar la lista de tareas después de eliminar una tarea
+      await axios.delete(`http://localhost:3000/new-tasks/${taskToDelete}`);
+      fetchTasks(); // Actualizar la lista de tareas después de eliminar una tarea
       handleCloseConfirmDialog();
     } catch (error) {
       console.error("Error al eliminar la tarea:", error);
@@ -119,7 +147,7 @@ const DashboardPage = () => {
 
   return (
     <MainLayout>
-      <h1>Dashboard</h1>
+      <h1>Dashboard Task</h1>
 
       {/* Tabla de tareas */}
       <TableContainer component={Paper}>
@@ -128,6 +156,8 @@ const DashboardPage = () => {
             <TableRow>
               <TableCell>Task Name</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>User</TableCell>
+              <TableCell>Group</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -136,6 +166,8 @@ const DashboardPage = () => {
               <TableRow key={task.id}>
                 <TableCell>{task.name}</TableCell>
                 <TableCell>{task.status}</TableCell>
+                <TableCell>{getUserNameById(task.userId)}</TableCell>
+                <TableCell>{getGroupNameById(task.groupId)}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleOpenEditModal(task)}>
                     <EditIcon />
@@ -201,6 +233,7 @@ const DashboardPage = () => {
               <MenuItem value="In Progress">In Progress</MenuItem>
               <MenuItem value="Done">Done</MenuItem>
               <MenuItem value="Paused">Paused</MenuItem>
+              <MenuItem value="Revision">Revision</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -211,6 +244,34 @@ const DashboardPage = () => {
             value={taskData.category}
             onChange={handleChange}
           />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>User</InputLabel>
+            <Select
+              name="userId"
+              value={taskData.userId}
+              onChange={handleChange}
+            >
+              {users.map((user) => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.email}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Group</InputLabel>
+            <Select
+              name="groupId"
+              value={taskData.groupId}
+              onChange={handleChange}
+            >
+              {groups.map((group) => (
+                <MenuItem key={group.id} value={group.id}>
+                  {group.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseModal} color="primary">
@@ -271,6 +332,34 @@ const DashboardPage = () => {
             value={taskData.category}
             onChange={handleChange}
           />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>User</InputLabel>
+            <Select
+              name="userId"
+              value={taskData.userId}
+              onChange={handleChange}
+            >
+              {users.map((user) => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.email}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Group</InputLabel>
+            <Select
+              name="groupId"
+              value={taskData.groupId}
+              onChange={handleChange}
+            >
+              {groups.map((group) => (
+                <MenuItem key={group.id} value={group.id}>
+                  {group.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseEditModal} color="primary">
@@ -304,4 +393,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default DashboardTask;

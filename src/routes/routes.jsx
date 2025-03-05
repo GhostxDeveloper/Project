@@ -3,7 +3,11 @@ import LoginPage from "../pages/LoginPage/LoginPage";
 import DashboardPage from "../pages/Dashboard/DashboardPage";
 import LandingPage from "../pages/LandingPage/LandingPage"
 import Register from '../pages/Registropage/RegistroPage';
-import RegistroPage from '../pages/Registropage/RegistroPage';
+import Grupos from '../pages/Groups.jsx/Groups';
+import Roles from '../pages/Rols/Roles';
+import DashboardTask from '../pages/DashboardTask/DashboardTask';
+import UserManagement from '../pages/UserManagement/UserManagement';
+import AssignedTasks from '../pages/AssignedTasks/AssignedTasks';
 
 const Routes = () => {
   let routes = useRoutes([
@@ -11,10 +15,12 @@ const Routes = () => {
     { path: "/login", element: <LoginPage /> },
     { path: "/dashboard", element: <DashboardPage /> },
     { path: "/register", element: <Register /> },
+    { path: "/groups", element: <Grupos /> },
+    { path: "/roles", element: <Roles /> },
+    { path: "/asignament", element: <DashboardTask /> },
+    { path: "/users", element: <UserManagement /> },
+    {path : "/assigned-tasks", element: <AssignedTasks />}
 
-    // <Route element = {MainLayout }>
-    //   <Route path = "register" element = {RegistroPage} />
-    // </Route>
   ]);
   return routes;
 }

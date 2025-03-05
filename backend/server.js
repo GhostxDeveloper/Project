@@ -1,20 +1,25 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp } from "firebase/app"; 
 import { getFirestore, collection, addDoc, query, where, getDocs, doc, updateDoc, getDoc, deleteDoc } from "firebase/firestore";
-import firebaseConfig from "./firebase.js";
+import firebaseConfig from "./firebase.js"; 
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const saltRounds = 10;
+const secretKey = 'keysalvador2505'; 
 
+const router = express.Router();
 const server = express();
 server.use(bodyParser.json());
 server.use(cors());
+server.use(router);
 
 
-server.post("/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log(`Intentando iniciar sesión con email: ${email}`);
@@ -40,12 +45,21 @@ server.post("/login", async (req, res) => {
       return res.status(401).send("Contraseña incorrecta.");
     }
 
+    // Actualiza la fecha del último inicio de sesión
     await updateDoc(doc(db, "Users", userDoc.id), {
       last_login: new Date(),
     });
 
+    // Genera el token JWT
+    const token = jwt.sign(
+      { id: userDoc.id, email: userData.email, role: userData.rol }, 
+      secretKey, 
+      { expiresIn: '1h' } // El token expirará en 1 hora
+    );
+
     res.status(200).json({
       message: 'Inicio de sesión exitoso',
+      token,  // Envía el token JWT en la respuesta
       user: {
         id: userDoc.id,
         email: userData.email,
@@ -59,7 +73,6 @@ server.post("/login", async (req, res) => {
     res.status(500).send("Error al iniciar sesión: " + error.message);
   }
 });
-
 
 server.post("/add-task", async (req, res) => {
   try {
