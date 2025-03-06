@@ -223,10 +223,6 @@ server.delete("/users/:userId", async (req, res) => {
 });
 
 
-server.listen(3000, () => {
-  console.log("Servidor escuchando en el puerto 3000");
-});
-
 
 
 server.post("/add-group", async (req, res) => {
