@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { addUser } from '../../services/apiService';
 
 const RegistroPage = () => {
   const [email, setEmail] = useState('');
@@ -23,8 +23,8 @@ const RegistroPage = () => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3000/add-user', { email, username, password, rol: 'User' });
-      setMessage(response.data);
+      const response = await addUser({ email, username, password, rol: 'User' });
+      setMessage(response.message);
     } catch (error) {
       setMessage('Error al registrar el usuario: ' + error.message);
     }
@@ -93,10 +93,9 @@ const RegistroPage = () => {
           style={{ marginTop: '16px' }}
           onClick={() => navigate('/login')}
         >
-          Iniciar sesion
+          Iniciar sesión
         </Button>
       </Box>
-
     </Container>
   );
 };

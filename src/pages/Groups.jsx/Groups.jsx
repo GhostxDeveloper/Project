@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Box,
   Button,
@@ -20,8 +19,7 @@ import {
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
 import MainLayout from "../../layouts/MainLayouts";
-
-const API_URL = "http://localhost:3000"; // Cambia esta URL si tu backend corre en otro puerto o dominio
+import { fetchGroups, addGroup, updateGroup, deleteGroup } from '../../services/apiService';
 
 const Groups = () => {
   const [groups, setGroups] = useState([]);
@@ -31,13 +29,13 @@ const Groups = () => {
 
   // Cargar los grupos al montar el componente
   useEffect(() => {
-    fetchGroups();
+    fetchGroupsData();
   }, []);
 
-  const fetchGroups = async () => {
+  const fetchGroupsData = async () => {
     try {
-      const response = await axios.get(`${API_URL}/groups`);
-      setGroups(response.data);
+      const data = await fetchGroups();
+      setGroups(data);
     } catch (error) {
       console.error("Error al obtener los grupos:", error.message);
     }
@@ -63,13 +61,13 @@ const Groups = () => {
     try {
       if (editingGroup) {
         // Actualizar grupo existente
-        await axios.put(`${API_URL}/groups/${editingGroup.id}`, groupData);
+        await updateGroup(editingGroup.id, groupData);
       } else {
         // Crear nuevo grupo
-        await axios.post(`${API_URL}/add-group`, groupData);
+        await addGroup(groupData);
       }
       handleCloseDialog();
-      fetchGroups(); // Recargar la lista de grupos
+      fetchGroupsData(); // Recargar la lista de grupos
     } catch (error) {
       console.error("Error al guardar el grupo:", error.message);
     }
@@ -77,8 +75,8 @@ const Groups = () => {
 
   const handleDeleteGroup = async (groupId) => {
     try {
-      await axios.delete(`${API_URL}/groups/${groupId}`);
-      fetchGroups(); // Recargar la lista de grupos
+      await deleteGroup(groupId);
+      fetchGroupsData(); // Recargar la lista de grupos
     } catch (error) {
       console.error("Error al eliminar el grupo:", error.message);
     }

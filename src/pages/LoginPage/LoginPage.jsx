@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { login } from '../../services/apiService';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -12,14 +12,21 @@ const LoginPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3000/login', { email, password });
-      
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      alert('Inicio de sesión exitoso');
-      navigate('/dashboard');
+      const data = await login(email, password); // Llamas a tu servicio de login
+      console.log('Respuesta del servidor:', data);
+
+      if (data.token) {
+        // Aquí ya tienes el token en data.token, puedes almacenarlo si lo necesitas
+        console.log('Token generado:', data.token); 
+        localStorage.setItem('token', data.token);  // Guardamos el token en localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));  // Guardamos el usuario en localStorage
+        alert('Inicio de sesión exitoso');
+        navigate('/dashboard');  // Navegas a la página de dashboard o la que necesites
+      } else {
+        alert('No se encontraron los datos del usuario');
+      }
     } catch (error) {
-      setError('Credenciales incorrectas: ' + error.response.data.message);
+      setError('Credenciales incorrectas: ' + error.message);  // Manejo de error
     }
   };
 
