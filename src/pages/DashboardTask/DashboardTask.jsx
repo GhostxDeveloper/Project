@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import MainLayout from '../../layouts/MainLayouts'; // Asegúrate de tener la ruta correcta del archivo MainLayout
 import { Fab, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, FormControl, InputLabel, Select, MenuItem, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
-import axios from 'axios';
+import { fetchNewTasks, addNewTask, updateNewTask, deleteNewTask, fetchUsers, fetchGroups } from '../../services/apiService';
 
 const DashboardTask = () => {
   const [user, setUser] = useState(null);
@@ -33,33 +33,33 @@ const DashboardTask = () => {
       const user = JSON.parse(storedUser);
       setUser(user);
       fetchTasks();
-      fetchUsers();
-      fetchGroups();
+      fetchUsersData();
+      fetchGroupsData();
     }
   }, []);
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/new-tasks');
-      setTasks(response.data);
+      const data = await fetchNewTasks();
+      setTasks(data);
     } catch (error) {
       console.error("Error al obtener las tareas:", error);
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsersData = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/users');
-      setUsers(response.data);
+      const data = await fetchUsers();
+      setUsers(data);
     } catch (error) {
       console.error("Error al obtener los usuarios:", error);
     }
   };
 
-  const fetchGroups = async () => {
+  const fetchGroupsData = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/groups');
-      setGroups(response.data);
+      const data = await fetchGroups();
+      setGroups(data);
     } catch (error) {
       console.error("Error al obtener los grupos:", error);
     }
@@ -104,7 +104,7 @@ const DashboardTask = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('http://localhost:3000/new-add-task', taskData);
+      const response = await addNewTask(taskData);
       console.log(response.data);
       setOpenModal(false); // Cerrar el modal después de enviar el formulario
       fetchTasks(); // Actualizar la lista de tareas
@@ -115,7 +115,7 @@ const DashboardTask = () => {
 
   const handleEditSubmit = async () => {
     try {
-      const response = await axios.put(`http://localhost:3000/new-tasks/${taskToEdit.id}`, taskData);
+      const response = await updateNewTask(taskToEdit.id, taskData);
       console.log(response.data);
       setOpenEditModal(false); // Cerrar el modal después de enviar el formulario
       fetchTasks(); // Actualizar la lista de tareas
@@ -137,7 +137,7 @@ const DashboardTask = () => {
   const handleDelete = async () => {
     try {
       console.log(`Eliminando tarea con ID: ${taskToDelete}`);
-      await axios.delete(`http://localhost:3000/new-tasks/${taskToDelete}`);
+      await deleteNewTask(taskToDelete);
       fetchTasks(); // Actualizar la lista de tareas después de eliminar una tarea
       handleCloseConfirmDialog();
     } catch (error) {

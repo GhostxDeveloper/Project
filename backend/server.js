@@ -1,22 +1,38 @@
+import dotenv from 'dotenv';
 import { initializeApp } from "firebase/app"; 
-import { getFirestore, collection, addDoc, query, where, getDocs, doc, updateDoc, getDoc, deleteDoc } from "firebase/firestore";
-import firebaseConfig from "./firebase.js"; 
+import { getFirestore } from "firebase/firestore"; 
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const app = initializeApp(firebaseConfig);
+// Cargar las variables de entorno
+dotenv.config();
+
+const app = initializeApp({
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID
+});
 const db = getFirestore(app);
+
 const saltRounds = 10;
-const secretKey = 'keysalvador2505'; 
+const secretKey = 'keysalvador2505'; // Este también debe estar en el archivo .env si lo deseas.
 
 const router = express.Router();
 const server = express();
 server.use(bodyParser.json());
 server.use(cors());
 server.use(router);
+
+server.listen(process.env.PORT || 3000, () => {
+  console.log('✅ Servidor Express corriendo...');
+});
+
 
 
 router.post("/login", async (req, res) => {

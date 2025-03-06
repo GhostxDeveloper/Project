@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Box,
   Button,
@@ -20,8 +19,7 @@ import {
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
 import MainLayout from "../../layouts/MainLayouts";
-
-const API_URL = "http://localhost:3000"; // Cambia esta URL si tu backend corre en otro puerto o dominio
+import { fetchRoles, addRole, updateRole, deleteRole } from '../../services/apiService';
 
 const Roles = () => {
   const [roles, setRoles] = useState([]);
@@ -31,13 +29,13 @@ const Roles = () => {
 
   // Cargar los roles al montar el componente
   useEffect(() => {
-    fetchRoles();
+    fetchRolesData();
   }, []);
 
-  const fetchRoles = async () => {
+  const fetchRolesData = async () => {
     try {
-      const response = await axios.get(`${API_URL}/roles`);
-      setRoles(response.data);
+      const data = await fetchRoles();
+      setRoles(data);
     } catch (error) {
       console.error("Error al obtener los roles:", error.message);
     }
@@ -63,13 +61,13 @@ const Roles = () => {
     try {
       if (editingRole) {
         // Actualizar rol existente
-        await axios.put(`${API_URL}/roles/${editingRole.id}`, roleData);
+        await updateRole(editingRole.id, roleData);
       } else {
         // Crear nuevo rol
-        await axios.post(`${API_URL}/add-role`, roleData);
+        await addRole(roleData);
       }
       handleCloseDialog();
-      fetchRoles(); // Recargar la lista de roles
+      fetchRolesData(); // Recargar la lista de roles
     } catch (error) {
       console.error("Error al guardar el rol:", error.message);
     }
@@ -77,8 +75,8 @@ const Roles = () => {
 
   const handleDeleteRole = async (roleId) => {
     try {
-      await axios.delete(`${API_URL}/roles/${roleId}`);
-      fetchRoles(); // Recargar la lista de roles
+      await deleteRole(roleId);
+      fetchRolesData(); // Recargar la lista de roles
     } catch (error) {
       console.error("Error al eliminar el rol:", error.message);
     }
