@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { initializeApp } from "firebase/app"; 
-import { getFirestore } from "firebase/firestore"; 
+import { getFirestore , doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs} from "firebase/firestore"; 
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
